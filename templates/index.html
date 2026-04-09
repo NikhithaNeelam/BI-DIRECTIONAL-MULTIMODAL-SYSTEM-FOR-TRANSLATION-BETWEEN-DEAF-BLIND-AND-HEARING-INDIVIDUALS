@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NexaComm — Bi-Directional Sign Language</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+:root{--p:#00f0ff;--s:#ff00d4;--bg:#0a0a12;--glass:rgba(255,255,255,.05);--gb:rgba(255,255,255,.1);}
+*{box-sizing:border-box;}
+body{background:var(--bg);color:#fff;font-family:'Outfit',sans-serif;overflow-x:hidden;}
+.orb{position:fixed;border-radius:50%;pointer-events:none;opacity:.07;z-index:0;}
+.orb1{top:-10%;left:-10%;width:50vw;height:50vw;background:radial-gradient(circle,var(--p),transparent 70%);}
+.orb2{bottom:-10%;right:-10%;width:40vw;height:40vw;background:radial-gradient(circle,var(--s),transparent 70%);}
+.card{background:var(--glass);border:1px solid var(--gb);border-radius:14px;backdrop-filter:blur(10px);padding:18px;transition:.3s;}
+.card:hover{border-color:var(--p);box-shadow:0 0 28px rgba(0,240,255,.15);}
+.card-accent{border-color:rgba(255,0,212,.25);}
+.card-audio{border-color:rgba(240,165,0,.25);}
+.ch{border-bottom:1px solid var(--gb);padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.ct{font-family:'Syne',sans-serif;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:1px;margin:0;font-size:.95rem;}
+.vw{position:relative;border:2px solid var(--gb);border-radius:10px;overflow:hidden;background:#000;}
+.vw img{width:100%;display:block;opacity:.92;}
+.scan{position:absolute;top:0;left:0;width:100%;height:2px;background:var(--p);box-shadow:0 0 10px var(--p);animation:scan 3s linear infinite;opacity:.4;pointer-events:none;}
+@keyframes scan{0%{top:0}100%{top:100%}}
+.inp{background:rgba(0,0,0,.4);border:1px solid var(--gb);color:#fff;border-radius:6px;}
+.inp::placeholder{color:rgba(255,255,255,.3);}
+.inp:focus{background:rgba(0,0,0,.6);border-color:var(--p);color:#fff;box-shadow:0 0 10px rgba(0,240,255,.18);outline:none;}
+.inp option{background:#0a0a12;}
+.btn-c{background:transparent;border:1px solid var(--p);color:var(--p);font-family:'Syne',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:1px;transition:.25s;}
+.btn-c:hover,.btn-c:focus{background:var(--p);color:#000;box-shadow:0 0 18px var(--p);}
+.btn-c:disabled{opacity:.45;pointer-events:none;}
+.btn-d{border-color:var(--s);color:var(--s);}
+.btn-d:hover{background:var(--s);color:#fff;box-shadow:0 0 18px var(--s);}
+.btn-m{border-color:#f0a500;color:#f0a500;}
+.btn-m:hover,.btn-m.on{background:#f0a500;color:#000;box-shadow:0 0 18px #f0a500;}
+.btn-m.listening{background:#f0a500;color:#000;animation:pmx 1s infinite;}
+@keyframes pmx{50%{box-shadow:0 0 30px #f0a500;}}
+.console{font-family:'Courier New',monospace;background:rgba(0,0,0,.55);border-left:3px solid var(--p);padding:10px 14px;margin-top:8px;border-radius:0 6px 6px 0;min-height:48px;color:#ccc;font-size:.88rem;word-break:break-word;}
+.console-a{border-left-color:#f0a500;}
+.hl{color:var(--p);font-weight:600;}
+.sb{display:flex;justify-content:space-between;align-items:center;padding:7px 13px;border-radius:6px;background:rgba(255,255,255,.04);font-size:.83rem;}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;}
+.dot-on{background:#00e676;box-shadow:0 0 6px #00e676;}
+.dot-off{background:#f44;}
+.badge-c{padding:2px 8px;border-radius:10px;border:1px solid rgba(0,240,255,.3);color:rgba(0,240,255,.75);font-size:.68rem;font-family:'Courier New',monospace;}
+#rec-ind{display:none;}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+
+<div class="container py-4 position-relative" style="z-index:2;max-width:1280px;">
+
+<!-- Header -->
+<header class="text-center mb-4">
+  <h1 class="fw-bold mb-1" style="font-family:'Syne',sans-serif;font-size:2rem;text-shadow:0 0 20px rgba(0,240,255,.5);">
+    NEXA<span style="color:var(--p);">COMM</span></h1>
+  <p class="text-muted mb-1" style="letter-spacing:2px;font-size:.78rem;">BI-DIRECTIONAL MULTIMODAL COMMUNICATION SYSTEM</p>
+  <div style="font-size:.76rem;">
+    <span class="dot dot-off" id="odot"></span>
+    <span id="otxt" style="color:#f44;">Ollama: checking...</span>
+    <span class="text-muted ms-2">&bull; rule-based fallback always active</span>
+  </div>
+</header>
+
+<div class="row g-3">
+
+<!-- ══ LEFT COLUMN ══ -->
+<div class="col-lg-6 d-flex flex-column gap-3">
+
+  <!-- Sign → Text -->
+  <div class="card">
+    <div class="ch">
+      <h5 class="ct"><i class="bi bi-camera-video"></i> Sign → Text</h5>
+      <span class="badge bg-transparent border border-info text-info" style="font-size:.68rem;">LIVE</span>
+    </div>
+    <div class="vw mb-3">
+      <div class="scan"></div>
+      <img src="{{ url_for('video_feed') }}" alt="Camera">
+      <div id="rec-ind" class="position-absolute top-0 end-0 m-2">
+        <span class="badge bg-danger"><i class="bi bi-record-circle"></i> REC</span>
+      </div>
+    </div>
+    <label class="text-muted small text-uppercase">Detected Signs</label>
+    <div id="raw-words" class="console">Waiting for sign input...</div>
+    <div class="d-flex gap-2 mt-3 flex-wrap">
+      <select id="lang" class="form-select inp" style="width:auto;min-width:105px;">
+        <option value="English">English</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Telugu">Telugu</option>
+      </select>
+      <button id="vbtn" onclick="translateSign()" class="btn btn-c flex-grow-1">
+        <i class="bi bi-translate"></i> Vocalize
+      </button>
+      <button onclick="clearWords()" class="btn btn-d px-3" title="Clear"><i class="bi bi-trash"></i></button>
+    </div>
+    <div class="text-center mt-3">
+      <small class="text-muted d-block">TRANSLATION OUTPUT</small>
+      <div id="final-out" class="mt-1" style="font-size:1.05rem;min-height:26px;text-shadow:0 0 8px #fff;">...</div>
+    </div>
+  </div>
+
+  <!-- Audio → Sign -->
+  <div class="card card-audio">
+    <div class="ch">
+      <h5 class="ct" style="color:#f0a500;"><i class="bi bi-mic"></i> Audio → Sign</h5>
+      <span class="badge bg-transparent border text-warning" style="border-color:#f0a500;font-size:.68rem;">SPEECH INPUT</span>
+    </div>
+    <div class="d-flex gap-2 mb-3">
+      <button id="mbtn" onclick="toggleMic()" class="btn btn-m flex-grow-1">
+        <i class="bi bi-mic-fill"></i> Start Listening
+      </button>
+      <select id="mlang" class="form-select inp" style="width:auto;min-width:105px;">
+        <option value="en-US">English</option>
+        <option value="hi-IN">Hindi</option>
+        <option value="te-IN">Telugu</option>
+      </select>
+    </div>
+    <label class="text-muted small text-uppercase">Heard Text</label>
+    <div id="atranscript" class="console console-a">Press Start then speak...</div>
+    <div class="d-flex gap-2 mt-3">
+      <button onclick="sendAudioToAvatar()" class="btn btn-c flex-grow-1">
+        <i class="bi bi-arrow-right-circle"></i> Send to Avatar
+      </button>
+      <button onclick="clearAudio()" class="btn btn-d px-3" title="Clear audio"><i class="bi bi-x-circle"></i></button>
+    </div>
+    <div class="sb mt-3">
+      <span class="text-muted small">MIC STATUS:</span>
+      <span id="mstat" class="fw-bold" style="color:#f0a500;font-family:'Courier New';">IDLE</span>
+    </div>
+  </div>
+
+  <!-- Record new sign -->
+  <div class="card card-accent">
+    <div class="ch">
+      <h5 class="ct" style="color:var(--s);"><i class="bi bi-cpu"></i> Record New Sign</h5>
+    </div>
+    <div class="input-group mb-2">
+      <input type="text" id="sname" class="form-control inp" placeholder="Sign name (e.g. THANK YOU)">
+      <button id="rbtn" onclick="toggleRec()" class="btn btn-d">Start Recording</button>
+    </div>
+    <small class="text-muted">1. Enter name → 2. Start → 3. Perform sign → 4. Stop &amp; Save</small>
+  </div>
+
+</div>
+
+<!-- ══ RIGHT COLUMN ══ -->
+<div class="col-lg-6 d-flex flex-column gap-3">
+
+  <div class="card" style="flex:1;">
+    <div class="ch">
+      <h5 class="ct"><i class="bi bi-robot"></i> Text / Audio → Avatar</h5>
+      <span class="badge bg-transparent border border-warning text-warning" style="font-size:.68rem;">3D AVATAR</span>
+    </div>
+
+    <div class="vw mb-3">
+      <img src="{{ url_for('avatar_feed') }}" alt="Avatar">
+    </div>
+
+    <label class="text-muted small text-uppercase">Type or use mic</label>
+    <div class="input-group mt-1 mb-3">
+      <input type="text" id="tinput" class="form-control inp"
+             placeholder="e.g. Hello, What is your name?"
+             onkeydown="if(event.key==='Enter')processText()">
+      <button id="sbtn" onclick="processText()" class="btn btn-c">
+        <i class="bi bi-send"></i> Transmit
+      </button>
+    </div>
+
+    <!-- Quick signs -->
+    <label class="text-muted small text-uppercase">Quick Signs</label>
+    <div class="d-flex flex-wrap gap-2 mt-1 mb-3">
+      <button class="btn btn-c btn-sm" onclick="quick('HAI')">HAI</button>
+      <button class="btn btn-c btn-sm" onclick="quick('BYE')">BYE</button>
+      <button class="btn btn-c btn-sm" onclick="quick('GOOD')">GOOD</button>
+      <button class="btn btn-c btn-sm" onclick="quick('FOOD')">FOOD</button>
+      <button class="btn btn-c btn-sm" onclick="quick('WELCOME')">WELCOME</button>
+      <button class="btn btn-c btn-sm" onclick="quick('DONE')">DONE</button>
+      <button class="btn btn-c btn-sm" onclick="quick('YOUR NAME')">YOUR NAME</button>
+      <button class="btn btn-c btn-sm" onclick="quick('GIVE ME')">GIVE ME</button>
+      <button class="btn btn-c btn-sm" onclick="quick('IM GOING')">IM GOING</button>
+      <button class="btn btn-c btn-sm" onclick="quick('CAN I GO')">CAN I GO</button>
+      <button class="btn btn-c btn-sm" onclick="quick('YOU ARE MY FRIEND')">FRIEND</button>
+      <button class="btn btn-c btn-sm" onclick="quick('GO AGEAD')">GO AHEAD</button>
+    </div>
+
+    <div class="sb mb-3">
+      <span class="text-muted small">AVATAR STATUS:</span>
+      <span id="astat" class="fw-bold text-info" style="font-family:'Courier New';">IDLE</span>
+    </div>
+
+    <hr style="border-color:var(--gb);margin:10px 0;">
+    <label class="text-muted small text-uppercase">CNN Detectable Signs</label>
+    <div id="cls-strip" class="d-flex flex-wrap gap-1 mt-1">
+      <span class="badge-c text-muted">loading...</span>
+    </div>
+  </div>
+
+</div>
+</div><!-- row -->
+</div><!-- container -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ═══════ STATE ═══════
+let isRec=false, micOn=false, recognition=null, audioText='';
+
+// ═══════ INIT ═══════
+(async function init(){
+  loadClasses();
+  checkOllama();
+  setInterval(pollWords,500);
+  setInterval(checkOllama,10000);
+})();
+
+// ═══════ OLLAMA STATUS ═══════
+async function checkOllama(){
+  try{
+    let d=await(await fetch('/ollama_status')).json();
+    let dot=document.getElementById('odot'),txt=document.getElementById('otxt');
+    if(d.online){dot.className='dot dot-on';txt.style.color='#00e676';txt.innerText='Ollama: ONLINE';}
+    else{dot.className='dot dot-off';txt.style.color='#f44';txt.innerText='Ollama: OFFLINE';}
+  }catch(e){}
+}
+
+// ═══════ CNN CLASSES ═══════
+async function loadClasses(){
+  try{
+    let d=await(await fetch('/get_classes')).json();
+    let s=document.getElementById('cls-strip');
+    s.innerHTML=d.classes&&d.classes.length
+      ?d.classes.map(c=>`<span class="badge-c">${c}</span>`).join('')
+      :'<span class="badge-c text-muted">No model — run train.py first</span>';
+  }catch(e){}
+}
+
+// ═══════ POLL SIGNS ═══════
+async function pollWords(){
+  if(isRec) return;
+  try{
+    let d=await(await fetch('/get_words')).json();
+    let t=d.words.join(' '), b=document.getElementById('raw-words');
+    if(t&&b.innerText!==t){b.innerText=t;b.classList.add('hl');setTimeout(()=>b.classList.remove('hl'),300);}
+  }catch(e){}
+}
+
+// ═══════ SIGN → TEXT ═══════
+async function clearWords(){
+  await fetch('/clear_words',{method:'POST'});
+  document.getElementById('raw-words').innerText='Waiting for sign input...';
+  document.getElementById('final-out').innerText='...';
+}
+
+async function translateSign(){
+  let words=document.getElementById('raw-words').innerText.trim();
+  if(!words||words==='Waiting for sign input...') return;
+  let lang=document.getElementById('lang').value;
+  let btn=document.getElementById('vbtn');
+  btn.innerHTML='<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+  btn.disabled=true;
+  try{
+    let d=await(await fetch('/process_sentence',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({words:words.split(' '),language:lang})
+    })).json();
+    let result=d.result||words;
+    document.getElementById('final-out').innerText=result;
+
+    // ── TEXT TO SPEECH — fixed to wait for voices to load ──
+    speakText(result, lang);
+
+  }catch(e){document.getElementById('final-out').innerText=words;}
+  finally{btn.innerHTML='<i class="bi bi-translate"></i> Vocalize';btn.disabled=false;}
+}
+
+function speakText(text, lang){
+  if(!('speechSynthesis' in window)||!text) return;
+  // Cancel any ongoing speech first
+  window.speechSynthesis.cancel();
+
+  function doSpeak(){
+    let utt=new SpeechSynthesisUtterance(text);
+    utt.lang=lang==='Hindi'?'hi-IN':lang==='Telugu'?'te-IN':'en-US';
+    utt.rate=0.95; utt.pitch=1.0; utt.volume=1.0;
+
+    // Pick a matching voice if available
+    let voices=window.speechSynthesis.getVoices();
+    if(voices.length>0){
+      let match=voices.find(v=>v.lang===utt.lang);
+      if(!match) match=voices.find(v=>v.lang.startsWith(utt.lang.split('-')[0]));
+      if(!match) match=voices.find(v=>v.default);
+      if(match) utt.voice=match;
+    }
+    window.speechSynthesis.speak(utt);
+  }
+
+  // Voices may not be ready yet on first load
+  if(window.speechSynthesis.getVoices().length>0){
+    doSpeak();
+  } else {
+    window.speechSynthesis.onvoiceschanged=()=>{ doSpeak(); window.speechSynthesis.onvoiceschanged=null; };
+  }
+}
+
+// ═══════ AUDIO INPUT ═══════
+function toggleMic(){
+  if(!('webkitSpeechRecognition'in window)&&!('SpeechRecognition'in window)){
+    alert('Speech recognition needs Google Chrome.'); return;}
+  micOn?stopMic():startMic();
+}
+
+function startMic(){
+  let SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang=document.getElementById('mlang').value;
+  recognition.continuous=true; recognition.interimResults=true;
+  recognition.onstart=()=>{
+    micOn=true; audioText='';
+    let b=document.getElementById('mbtn');
+    b.innerHTML='<i class="bi bi-mic-fill"></i> Listening...';
+    b.classList.add('listening');
+    document.getElementById('mstat').innerText='LISTENING';
+    document.getElementById('atranscript').innerText='';
+  };
+  recognition.onresult=(e)=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      let t=e.results[i][0].transcript;
+      if(e.results[i].isFinal){audioText+=t+' ';}
+      else interim+=t;
+    }
+    document.getElementById('atranscript').innerText=(audioText+interim).trim();
+  };
+  recognition.onerror=(e)=>{
+    document.getElementById('mstat').innerText='ERR:'+e.error.toUpperCase();
+    stopMic();
+  };
+  recognition.onend=()=>{if(micOn) recognition.start();};
+  audioText=''; recognition.start();
+}
+
+function stopMic(){
+  micOn=false; if(recognition) recognition.stop();
+  let b=document.getElementById('mbtn');
+  b.innerHTML='<i class="bi bi-mic-fill"></i> Start Listening';
+  b.classList.remove('listening');
+  document.getElementById('mstat').innerText='IDLE';
+}
+
+function clearAudio(){
+  stopMic(); audioText='';
+  document.getElementById('atranscript').innerText='Press Start then speak...';
+}
+
+async function sendAudioToAvatar(){
+  let t=document.getElementById('atranscript').innerText.trim();
+  if(!t||t.startsWith('Press Start')){alert('No speech detected yet.');return;}
+  stopMic();
+  document.getElementById('tinput').value=t;
+  await processText();
+}
+
+// ═══════ RECORDING ═══════
+async function toggleRec(){
+  let ni=document.getElementById('sname'),btn=document.getElementById('rbtn'),
+      ind=document.getElementById('rec-ind'),name=ni.value.trim().toUpperCase();
+  if(!isRec){
+    if(!name){alert('Enter a sign name first.');return;}
+    await fetch('/start_recording',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sign_name:name})});
+    isRec=true; btn.innerText='Stop & Save';
+    btn.style.background='var(--s)'; btn.style.color='#fff';
+    ni.disabled=true; ind.style.display='block';
+  } else {
+    let d=await(await fetch('/stop_recording',{method:'POST'})).json();
+    isRec=false; btn.innerText='Start Recording';
+    btn.style.background=''; btn.style.color='';
+    ni.disabled=false; ind.style.display='none';
+    if(d.status==='saved'){alert(`Saved "${d.name}" (${d.count} frames)`);ni.value='';}
+    else alert('Error: '+(d.message||'No hand data'));
+  }
+}
+
+// ═══════ TEXT → SIGN AVATAR ═══════
+async function processText(){
+  let text=document.getElementById('tinput').value.trim();
+  let stat=document.getElementById('astat'),btn=document.getElementById('sbtn');
+  if(!text) return;
+  btn.disabled=true; stat.innerText='TRANSLATING...';
+  try{
+    let d=await(await fetch('/text_to_sign',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text})
+    })).json();
+    if(!d.glosses){stat.innerText='NO GLOSSES';return;}
+
+    // Split on spaces, keep underscore-joined phrases as one token
+    let glosses=d.glosses.split(' ').filter(Boolean);
+    stat.innerText='RENDERING...';
+
+    for(let word of glosses){
+      if(!word) continue;
+      let dw=word.replace(/_/g,' ');
+      let pd=await(await fetch('/trigger_avatar',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({word:dw})
+      })).json();
+      if(pd.status==='playing'){
+        stat.innerText=`PLAYING: ${dw}`;
+        await delay((pd.duration*1000)+300);
+      } else {
+        stat.innerText=`NOT FOUND: ${dw}`;
+        await delay(600);
+      }
+    }
+  }catch(e){stat.innerText='ERROR';}
+  finally{stat.innerText='IDLE';btn.disabled=false;}
+}
+
+async function quick(word){
+  let stat=document.getElementById('astat');
+  stat.innerText=`PLAYING: ${word}`;
+  try{
+    let d=await(await fetch('/trigger_avatar',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({word})
+    })).json();
+    if(d.status==='playing') await delay((d.duration*1000)+300);
+    else{stat.innerText=`NOT FOUND: ${word}`;await delay(700);}
+  }catch(e){}
+  finally{stat.innerText='IDLE';}
+}
+
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+</script>
+</body>
+</html>
