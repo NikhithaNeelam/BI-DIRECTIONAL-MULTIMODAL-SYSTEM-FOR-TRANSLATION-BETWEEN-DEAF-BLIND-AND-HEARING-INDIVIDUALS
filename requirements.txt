@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════════════════════════
+#  Bi-Directional Sign Language System
+# Requirements for Python 3.11 on Windows
+#
+# INSTALL COMMAND:
+#   pip install -r requirements.txt
+#
+# If you get errors, install in this order:
+#   pip install numpy
+#   pip install tensorflow==2.13.1
+#   pip install mediapipe==0.10.9
+#   pip install -r requirements.txt
+# ═══════════════════════════════════════════════════════════════
+
+# ── Web Framework ───────────────────────────────────────────────
+flask>=2.3.0,<4.0.0
+
+# ── Computer Vision ─────────────────────────────────────────────
+opencv-python>=4.8.0
+mediapipe==0.10.9        # IMPORTANT: must be 0.10.9 — this is the last version
+                         # that includes mp.solutions.hands on Windows Python 3.11
+                         # Do NOT upgrade to 0.10.10+ (solutions API was removed)
+
+# ── Deep Learning ───────────────────────────────────────────────
+tensorflow==2.13.1       # Stable release for Python 3.11 Windows CPU
+                         # Includes tf.lite.Interpreter — no separate tflite needed
+                         # Alternatives if this fails:
+                         #   tensorflow==2.14.0
+                         #   tensorflow==2.15.0
+
+# ── Numerical / Scientific ──────────────────────────────────────
+numpy>=1.24.0,<2.0.0     # Keep below 2.0 — tensorflow 2.13 requires numpy <2.0
+
+# ── Training Utilities ──────────────────────────────────────────
+scikit-learn>=1.3.0      # classification_report, metrics
+matplotlib>=3.7.0        # training_history.png plot
+tqdm>=4.65.0             # progress bars in preprocess_datasets.py
+
+# ── AI / NLP (Ollama HTTP client) ──────────────────────────────
+requests>=2.31.0         # Used in ai_engine.py to call Ollama REST API
+                         # No ollama Python library needed — we call HTTP directly
+
+# ── Dataset Download ────────────────────────────────────────────
+kagglehub>=0.2.0         # Download LeapGestRecog dataset from Kaggle
+                         # Usage: import kagglehub
+                         #        path = kagglehub.dataset_download("gti-upm/leapgestrecog")
+
+# ── Standard Library (already in Python — no install needed) ────
+# os, sys, json, math, time, threading, webbrowser, argparse, re
