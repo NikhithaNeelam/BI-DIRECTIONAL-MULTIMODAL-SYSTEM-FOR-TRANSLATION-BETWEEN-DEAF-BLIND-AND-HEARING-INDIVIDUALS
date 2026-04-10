@@ -76,16 +76,24 @@ Web	Flask
 
 ⚙️ Installation & Setup
 🔹 1. Clone Repository
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+
+git clone [https://github.com/your-username/your-repo-name](https://github.com/NikhithaNeelam/BI-DIRECTIONAL-MULTIMODAL-SYSTEM-FOR-TRANSLATION-BETWEEN-DEAF-BLIND-AND-HEARING-INDIVIDUALS).git
+
+cd BI-DIRECTIONAL-MULTIMODAL-SYSTEM-FOR-TRANSLATION-BETWEEN-DEAF-BLIND-AND-HEARING-INDIVIDUALS
+
 🔹 2. Create Virtual Environment
+
 python -m venv venv
 venv\Scripts\activate   # Windows
+
 🔹 3. Install Dependencies
 pip install -r requirements.txt
+
 🔹 4. Run Application
+
+ollama serve
 python app.py
-🎬 Demo (How it Works)
+
 🎥 Input → Output Flow
 Input Type	Output
 ✋ Gesture	Text + Speech
