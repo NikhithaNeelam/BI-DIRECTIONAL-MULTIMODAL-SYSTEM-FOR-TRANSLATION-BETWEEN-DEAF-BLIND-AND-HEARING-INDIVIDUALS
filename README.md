@@ -30,12 +30,14 @@ CNN Model (Gesture Recognition)
 NLP Engine (Sentence Refinement)
         ↓
 Output (Text / Speech / Avatar)
+
 🔄 Workflow
 Capture input (gesture / speech / text)
 Extract features (MediaPipe landmarks)
 Classify gestures using CNN
 Refine output using NLP
 Generate output (Text / Speech / Avatar)
+
 📊 Model Performance
 🔹 Training Accuracy & Loss
 
@@ -44,10 +46,12 @@ Metric	Value
 Accuracy	92–96%
 FPS	25–30
 Latency	<120 ms
+
 🔍 Insights
 Rapid convergence within first few epochs
 Minimal overfitting (train ≈ validation curves)
 Stable low loss indicates strong generalization
+
 📂 Dataset
 Custom Indian Sign Language (ISL) dataset
 ~17,200 samples
@@ -60,6 +64,7 @@ Grayscale conversion
 Image resizing
 Normalization
 Data augmentation
+
 🧠 Tech Stack
 Category	Tools
 Language	Python 3.9
@@ -68,6 +73,7 @@ Computer Vision	OpenCV, MediaPipe
 NLP	LLaMA (Ollama)
 Speech	SpeechRecognition, gTTS
 Web	Flask
+
 ⚙️ Installation & Setup
 🔹 1. Clone Repository
 git clone https://github.com/your-username/your-repo-name.git
@@ -90,6 +96,7 @@ Live camera input
 Real-time predictions
 Language selection
 Output display (Text + Avatar + Audio)
+
 🏆 Novelty / Contribution
 
 ✔ Full bidirectional communication system
@@ -106,6 +113,7 @@ Transformer-based sign recognition
 Emotion-aware gestures
 Mobile app deployment
 Expanded multilingual support
+
 📜 References
 IEEE Research Papers
 arXiv Publications
